@@ -1,7 +1,29 @@
 var w = innerWidth;
 var h = innerHeight;
 var hr = 5;
+function saveTextAsFile(t){
+		var textFileAsBlob = new Blob([t], {type:"application/json"});
+		var downloadLink = document.createElement("a");
+		downloadLink.download = "cords.json";
+		downloadLink.innerHTML = "Download File";
+		if (window.webkitURL != null)
+		{
+			// Chrome allows the link to be clicked
+			// without actually adding it to the DOM.
+			downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+		}
+		else
+		{
+			// Firefox requires the link to be added to the DOM
+			// before it can be clicked.
+			downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+			downloadLink.onclick = destroyClickedElement;
+			downloadLink.style.display = "none";
+			document.body.appendChild(downloadLink);
+		}
 
+		downloadLink.click();
+}
 window.onload = function () {
   var svg = d3.select("#canvas")
     .attr("height", h)
@@ -42,6 +64,11 @@ window.onload = function () {
       var map = svg.append("g")
 
       var hexmap = hex(ca)
+	
+	var cords = hexmap.grid.layout.map((x) => {return [x.x, x.y]})
+	saveTextAsFile(JSON.stringify({"cords": cords}))
+    console.log(JSON.stringify({"cords": cords}))
+
       svg.selectAll('.hex')
         .data(hexmap.grid.layout)
         .enter()
