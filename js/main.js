@@ -54,21 +54,23 @@ window.onload = function () {
       var hexmap = hex(ca)
       //Gets the cords for preprocessing
       // var cords = hexmap.grid.layout.map((x) => {
-      //       var latLon = proj.invert([x.y, x.x])
+      //       return cordRound(proj.invert([x.y, x.x]))
       //       })
       //saveTextAsFile(JSON.stringify({"cords": cords}))
       //console.log(JSON.stringify({"cords": cords}))
+
       var ca_b = d3.json("tout.json")
       .then(function (weatherData){
         var slider = d3
         .sliderHorizontal()
-        .min(0)
-        .max(10)
+        .min(1)
+        .max(12)
         .step(1)
-        .width(300)
+        .width(w*0.9)
         .displayValue(false)
         .on('onchange', val => {
           d3.select('#value').text(val);
+          selectedMonth = val-1
         });
     
       d3.select('#slider')
