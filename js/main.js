@@ -53,13 +53,17 @@ window.onload = function () {
       var map = svg.append("g")
       var hexmap = hex(ca)
       //Gets the cords for preprocessing
-      // var cords = hexmap.grid.layout.map((x) => {
-      //       return cordRound(proj.invert([x.y, x.x]))
-      //       })
+      //var cords = hexmap.grid.layout.map((x) => {return cordRound(proj.invert([x.x, x.y]))})
       //saveTextAsFile(JSON.stringify({"cords": cords}))
       //console.log(JSON.stringify({"cords": cords}))
+    d3.select("#canvas").on("click", function() {
+        var m = d3.mouse(this)
+        var p = proj.invert(m);
+        console.log("lat/lon:" +p);
+        console.log("mouse :" +m);
+    });
 
-      var ca_b = d3.json("tout.json")
+      var ca_b = d3.json("interpolatedHexData.json")
       .then(function (weatherData){
         var slider = d3
         .sliderHorizontal()
@@ -94,7 +98,7 @@ window.onload = function () {
           .attr('d', hexmap.hexagon())
           .style('stroke', '#666')
           .style('fill', (d)=>{
-            var hexLonLat = cordRound(proj.invert([d.y, d.x]))
+            var hexLonLat = cordRound(proj.invert([d.x, d.y]))
             if (cordToKey(hexLonLat) in yearlyData){
               var hexData = yearlyData[cordToKey(hexLonLat)][selectedMonth]
               if (hexData != null){
@@ -104,7 +108,7 @@ window.onload = function () {
             return 'gray'
           })
           .style('stroke-width', 1);
-      })
+      }); //end then() for weather data
       
    
    
