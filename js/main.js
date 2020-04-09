@@ -86,8 +86,8 @@ window.onload = function () {
         .call(slider);
 
         var cScale = d3.scaleLinear()
-                        .domain([-5, 30])
-                        .range(['white', 'blue'])
+                        .domain([-20, 0, 20])
+                        .range(['blue', 'white', 'red'])
         var yearlyData = weatherData[selectedYear]
         svg.selectAll('.hex')
           .data(hexmap.grid.layout)
@@ -105,7 +105,7 @@ window.onload = function () {
                 return cScale(hexData)
               } 
             }
-            return 'gray'
+            return 'lightgray'
           })
           .style('stroke-width', 1);
       }); //end then() for weather data
