@@ -23,6 +23,12 @@ var cScale =
 
 var t = d3.transition();
 
+var svg = d3.select("#canvas")
+  .attr("height", h)
+  .attr("width", w)
+  .attr("viewBox", [0, 0, w, h]);
+var map = svg.append("g")
+
 function updateVisDataColours() {
   if (visData.length != 0) {
     var yearlyData = weatherData[selectedYear]
@@ -32,7 +38,6 @@ function updateVisDataColours() {
         (cordToKey(hexLonLat) in yearlyData)) {
         var hexData = yearlyData[cordToKey(hexLonLat)][selectedMonth]
         if (hexData != null) {
-          console.log(hexData)
           d.colour = cScale(hexData)
         } else {
           d.colour = 'white'
@@ -95,21 +100,15 @@ function cordRound(cord) {
 
 function drawHexmap() {
   //  console.log('Drawing Hexmap')
-  var svg = d3.select("#canvas")
-    .attr("height", h)
-    .attr("width", w)
-    .attr("viewBox", [0, 0, w, h]);
-  var map = svg.append("g")
   d3.select("#canvas").on("click", function () {
     var m = d3.mouse(this)
     var p = proj.invert(m);
     console.log("lat/lon:" + p);
     console.log("mouse :" + m);
   });
-  //  svg.selectAll('.hex').remove()
+  //    svg.selectAll('.hex').remove()
 
-  console.log(d3.extent(visData.map(d => d.y)))
-  svg.selectAll('.hex')
+  map.selectAll('.hex')
     .data(visData)
     .join(
       enter => enter
@@ -139,12 +138,6 @@ function drawHexmap() {
         .style('fill', (d) => {
           return d.colour
         })
-      ),
-      exit => exit
-      .call(ex => ex.transition(t)
-        .duration(500)
-        .style('fill', 'white')
-        .remove()
       )
     );
 }
