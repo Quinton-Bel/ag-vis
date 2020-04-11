@@ -96,7 +96,7 @@ function drawHexmap() {
     console.log("lat/lon:" + p);
     console.log("mouse :" + m);
   });
-  svg.selectAll('.hex').remove()
+  //  svg.selectAll('.hex').remove()
   svg.selectAll('.hex')
     .data(visData)
     .join(
@@ -118,7 +118,6 @@ function drawHexmap() {
       .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
       .attr('d', hexPath)
       .style('stroke', '#666')
-      .style('fill', 'lightgray')
       .style('stroke-width', 1)
       .call(enter => enter.transition(t)
         .duration(1500)
