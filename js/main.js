@@ -134,7 +134,7 @@ function drawHexmap() {
     );
 }
 
-var slider = d3
+var sliderMonth = d3
   .sliderHorizontal()
   .min(1)
   .max(12)
@@ -149,14 +149,37 @@ var slider = d3
     drawHexmap()
   });
 
-d3.select('#slider')
+d3.select('#sliderMonth')
   .append('svg')
-  .attr('width', 500)
+  .attr('width', w)
   .attr('height', 100)
   .append('g')
   .attr('transform', 'translate(30,30)')
-  .call(slider);
+  .call(sliderMonth);
 
+var sliderYear = d3
+  .sliderHorizontal()
+  .min(1950)
+  .max(2012)
+  .default(1990)
+  .step(1)
+  .width(w * 0.9)
+  .displayValue(false)
+  .on('onchange', val => {
+    d3.select('#value').text(val);
+    selectedYear = val
+    updateVisDataColours()
+    drawHexmap()
+  });
+
+d3.select('#sliderYear')
+  .append('svg')
+  .attr('width', w)
+  .attr('height', 100)
+  .append('g')
+  .attr('transform', 'translate(30,30)')
+  .call(sliderYear);
+  
 window.onload = function () {
   //Loads in the grid data
   var ca_b = d3.json("canadaBorder.geo.json")
