@@ -1,5 +1,5 @@
-var w = 500;
-var h = 300;
+var w = 700;
+var h = 400;
 var hr = 3;
 var selectedMonth = 0
 var selectedYear = 1990
@@ -153,6 +153,7 @@ d3.select('#sliderMonth')
   .append('svg')
   .attr('width', w)
   .attr('height', 100)
+  .attr('class', 'slider')
   .append('g')
   .attr('transform', 'translate(30,30)')
   .call(sliderMonth);
@@ -176,10 +177,11 @@ d3.select('#sliderYear')
   .append('svg')
   .attr('width', w)
   .attr('height', 100)
+  .attr('class', 'slider')
   .append('g')
   .attr('transform', 'translate(30,30)')
   .call(sliderYear);
-  
+
 window.onload = function () {
   //Loads in the grid data
   var ca_b = d3.json("canadaBorder.geo.json")

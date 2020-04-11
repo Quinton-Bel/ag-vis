@@ -7,4 +7,9 @@ h1{
 }
 #canvas{
   margin: auto;
+  display: block;
+}
+.slider{ 
+  margin: auto;
+  display: block;
 }
