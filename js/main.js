@@ -1,6 +1,7 @@
-var w = 700;
-var h = 400;
-var hr = 3;
+var mapW = 960;
+var mapH = 720;
+var sliderWidth = innerWidth/2;
+var hr = 7;
 var selectedMonth = 0
 var selectedYear = 1990
 var weatherType = 'Tmax'
@@ -12,19 +13,25 @@ var hexPath = []
 var cScale = d3.scaleLinear()
   .domain([-20, 0, 20])
   .range(['blue', 'white', 'red']);
-
+var rainScale = d3.scaleLinear()
+                  .domain([0, 500])
+                  .range(['white', 'green'])
 var t = d3.transition();
 
 function updateVisDataColours() {
   if (visData.length != 0) {
-    var yearlyData = weatherData[selectedYear]
+    var yearlyData = weatherData[selectedYear] 
     visData = visData.map((d) => {
       var hexLonLat = cordRound(proj.invert([d.x, d.y]))
       if ((yearlyData != undefined) &&
         (cordToKey(hexLonLat) in yearlyData)) {
         var hexData = yearlyData[cordToKey(hexLonLat)][selectedMonth]
         if (hexData != null) {
-          d.colour = cScale(hexData)
+          if(weatherType=='Tmax' || weatherType=='Tmin'){
+            d.colour = cScale(hexData)
+          }else{
+            d.colour = rainScale(hexData)
+          }
         } else {
           d.colour = 'lightgray'
         }
@@ -34,17 +41,18 @@ function updateVisDataColours() {
       return d
     })
   }
-  //  console.log('Updated vis data', visData)
+  //console.log('Updated vis data', visData)
 }
 
 function loadWeatherData(weatherFile) {
   $.ajax({
     url: weatherFile,
-    async: false,
+    async: true,
     dataType: 'json',
     success: function (response) {
       weatherData = response
       updateVisDataColours()
+      drawHexmap()
     }
   });
 }
@@ -85,10 +93,14 @@ function cordRound(cord) {
 
 function drawHexmap() {
   //  console.log('Drawing Hexmap')
-  var svg = d3.select("#canvas")
-    .attr("height", h)
-    .attr("width", w)
-    .attr("viewBox", [0, 0, w, h]);
+  var svg = d3.select("#canvas-container")
+    // Container class to make it responsive.
+   .classed("svg-container", true) 
+   .select("#canvas")
+   // Responsive SVG needs these 2 attributes and no width and height attr.
+   .attr("preserveAspectRatio", "xMinYMin meet")
+   .attr("viewBox", "0 0 960 720")
+   
   var map = svg.append("g")
   d3.select("#canvas").on("click", function () {
     var m = d3.mouse(this)
@@ -97,7 +109,7 @@ function drawHexmap() {
     console.log("mouse :" + m);
   });
   //  svg.selectAll('.hex').remove()
-  svg.selectAll('.hex')
+  map.selectAll('.hex')
     .data(visData)
     .join(
       enter => enter
@@ -139,7 +151,7 @@ var sliderMonth = d3
   .min(1)
   .max(12)
   .step(1)
-  .width(w * 0.9)
+  .width(sliderWidth*0.8)
   .displayValue(false)
   .on('onchange', val => {
     d3.select('#value').text(val);
@@ -151,8 +163,8 @@ var sliderMonth = d3
 
 d3.select('#sliderMonth')
   .append('svg')
-  .attr('width', w)
-  .attr('height', 100)
+  .attr('width', sliderWidth)
+  .attr('height', 50)
   .attr('class', 'slider')
   .append('g')
   .attr('transform', 'translate(30,30)')
@@ -164,19 +176,23 @@ var sliderYear = d3
   .max(2012)
   .default(1990)
   .step(1)
-  .width(w * 0.9)
+  .width(sliderWidth*0.8)
   .displayValue(false)
   .on('onchange', val => {
     d3.select('#value').text(val);
     selectedYear = val
-    updateVisDataColours()
-    drawHexmap()
+    if(false){
+      loadWeatherData()
+    }else{
+      updateVisDataColours()
+      drawHexmap()
+    }
   });
 
 d3.select('#sliderYear')
   .append('svg')
-  .attr('width', w)
-  .attr('height', 100)
+  .attr('width', sliderWidth)
+  .attr('height', 50)
   .attr('class', 'slider')
   .append('g')
   .attr('transform', 'translate(30,30)')
@@ -187,10 +203,10 @@ window.onload = function () {
   var ca_b = d3.json("canadaBorder.geo.json")
     .then(function (ca) {
       proj = d3.geoAlbers()
-        .fitSize([w * 0.95, h * 0.90], ca)
+                .fitSize([mapW, mapH], ca)
       var path = d3.geoPath().projection(proj);
       var hex = d3.hexgrid()
-        .extent([w, h])
+        .extent([mapW, mapH])
         .geography(ca)
         .pathGenerator(path)
         .projection(proj)
