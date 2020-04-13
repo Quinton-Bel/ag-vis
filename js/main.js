@@ -51,8 +51,8 @@ var sliderWeather = d3
   .on('end', val => {
     d3.select('#value').text(val);
     console.log(weatherTypes[val - 1])
-    if (weatherType!=weatherTypes[val - 1]){
-      weatherType = weatherTypes[val - 1] 
+    if (weatherType != weatherTypes[val - 1]) {
+      weatherType = weatherTypes[val - 1]
       weatherFile = makeWeatherFileName(selectedYear, weatherType)
       loadWeatherData(weatherFile)
     }
@@ -278,8 +278,8 @@ window.onload = function () {
         .append("path")
         .attr("fill", "transparent")
         .style("opacity", 0.5)
-        .style("stroke-width", '0.5px')
-        .attr("stroke", "black")
+        .style("stroke-width", '2px')
+        .attr("stroke", "white")
         .attr("d", (d) => {
           console.log(d);
           return path(d)
@@ -319,7 +319,7 @@ function drawChart() {
   var svg = d3.select("#chart")
     .classed("svg-container", true)
     .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 960 800");
+    .attr("viewBox", "0 0 960 400");
 
   d3.csv("SAD.csv").then(function (data) {
     //Read data
