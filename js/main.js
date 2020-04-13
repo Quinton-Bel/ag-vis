@@ -347,10 +347,6 @@ var proviences;
 var years
 
 function drawChart() {
-  var linechart = d3.select("#chart")
-    .classed("svg-container", true)
-    .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 960 400");
 
   d3.csv("SAD.csv").then(function (data) {
     //Read data
