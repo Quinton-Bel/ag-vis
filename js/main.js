@@ -1,6 +1,6 @@
 var mapW = 960;
 var mapH = 720;
-var sliderSize = mapH*0.25;
+var sliderSize = mapH * 0.25;
 var hr = 7;
 var selectedMonth = 0
 var selectedYear = 1990
@@ -12,7 +12,6 @@ var proj = undefined
 var hexPath = []
 var cScale =
   //    d3.scaleThreshold([-20, -15, -10, -5, 0, 5, 10, 15, 20], d3.schemeRdBu[10].reverse());
-
   d3.scaleLinear()
   .domain([-20, -10, 0, 10, 20])
   .range(['#2E62FF',
@@ -23,29 +22,31 @@ var cScale =
   .interpolate(d3.interpolateRgb);
 
 var rainScale = d3.scaleQuantize()
-                  .domain([ 0, 500 ])
-                  .range(colorbrewer.Blues[9])
+  .domain([0, 500])
+  .range(colorbrewer.Blues[9])
 
-var t = d3.transition();
+var svg = d3.select("#canvas-container")
+  // Container class to make it responsive.
+  .classed("svg-container", true)
+  .select("#canvas")
+  // Responsive SVG needs these 2 attributes and no width and height attr.
+  .attr("preserveAspectRatio", "xMinYMin meet")
+  .attr("viewBox", "0 0 960 720")
 
-var svg = d3.select("#canvas")
-  .attr("height", h)
-  .attr("width", w)
-  .attr("viewBox", [0, 0, w, h]);
-var map = svg.append("g")
+var map = svg.append("g");
 
 function updateVisDataColours() {
   if (visData.length != 0) {
-    var yearlyData = weatherData[selectedYear] 
+    var yearlyData = weatherData[selectedYear]
     visData = visData.map((d) => {
       var hexLonLat = cordRound(proj.invert([d.x, d.y]))
       if ((yearlyData != undefined) &&
         (cordToKey(hexLonLat) in yearlyData)) {
         var hexData = yearlyData[cordToKey(hexLonLat)][selectedMonth]
         if (hexData != null) {
-          if(weatherType=='Tmax' || weatherType=='Tmin'){
+          if (weatherType == 'Tmax' || weatherType == 'Tmin') {
             d.colour = cScale(hexData)
-          }else{
+          } else {
             d.colour = rainScale(hexData)
           }
         } else {
@@ -67,9 +68,9 @@ function loadWeatherData(weatherFile) {
     async: true,
     dataType: 'json',
     success: function (response) {
-      weatherData = response
-      updateVisDataColours()
-      drawHexmap()
+      weatherData = response;
+      updateVisDataColours();
+      drawHexmap();
     }
   });
 }
@@ -110,15 +111,6 @@ function cordRound(cord) {
 
 function drawHexmap() {
   //  console.log('Drawing Hexmap')
-  var svg = d3.select("#canvas-container")
-    // Container class to make it responsive.
-   .classed("svg-container", true) 
-   .select("#canvas")
-   // Responsive SVG needs these 2 attributes and no width and height attr.
-   .attr("preserveAspectRatio", "xMinYMin meet")
-   .attr("viewBox", "0 0 960 720")
-   
-  var map = svg.append("g")
   d3.select("#canvas").on("click", function () {
     var m = d3.mouse(this)
     var p = proj.invert(m);
@@ -126,6 +118,7 @@ function drawHexmap() {
     console.log("mouse :" + m);
   });
 
+  var t = d3.transition().ease(d3.easeCubicOut);
   //  svg.selectAll('.hex').remove()
   map.selectAll('.hex')
     .data(visData)
@@ -153,29 +146,31 @@ function drawHexmap() {
       .style('stroke-width', 1)
       .call(enter => enter
         .transition(t)
+        .delay((d, i) => 500 + i / 2)
         .duration(750)
         .style('fill', (d) => {
           return d.colour
         })
       )
     );
-    var weatherLegend = d3.legendColor()
-                  .labelFormat(d3.format(".0f"))
-                  .title(weatherType + " data")
-                  .titleWidth(100);
 
-    if(weatherType=='Tmax' || weatherType=='Tmin'){
-      weatherLegend.scale(cScale)
-      weatherLegend.useClass(false)
-    }else{
-      weatherLegend.scale(rainScale)
-      weatherLegend.useClass(true)
-    }
-    svg.select("#legend").remove()
-    svg.append("g")
-        .attr("id", "legend")
-        .attr("transform", "translate("+ (mapW-150) +", "+ (mapH*0.1) +")")
-        .call(weatherLegend);
+  var weatherLegend = d3.legendColor()
+    .labelFormat(d3.format(".0f"))
+    .title(weatherType + " data")
+    .titleWidth(100);
+
+  if (weatherType == 'Tmax' || weatherType == 'Tmin') {
+    weatherLegend.scale(cScale)
+    weatherLegend.useClass(false)
+  } else {
+    weatherLegend.scale(rainScale)
+    weatherLegend.useClass(true)
+  }
+  svg.select("#legend").remove()
+  svg.append("g")
+    .attr("id", "legend")
+    .attr("transform", "translate(" + (mapW - 150) + ", " + (mapH * 0.1) + ")")
+    .call(weatherLegend);
 }
 
 var sliderMonth = d3
@@ -183,7 +178,7 @@ var sliderMonth = d3
   .min(1)
   .max(12)
   .step(1)
-  .height(sliderSize*0.8)
+  .height(sliderSize * 0.8)
   .displayValue(false)
   .on('end', val => {
     d3.select('#value').text(val);
@@ -194,10 +189,10 @@ var sliderMonth = d3
   });
 
 d3.select('#sliderMonth')
-   .classed("slider-container", true) 
+  .classed("slider-container", true)
   .append('svg')
-   .attr("preserveAspectRatio", "xMinYMin meet")
-   .attr("viewBox", "0 0 " + 50 + " "+ sliderSize.toString())
+  .attr("preserveAspectRatio", "xMinYMin meet")
+  .attr("viewBox", "0 0 " + 50 + " " + sliderSize.toString())
   .attr('class', 'slider')
   .append('g')
   .attr('transform', 'translate(7, 14)')
@@ -209,24 +204,24 @@ var sliderYear = d3
   .max(2012)
   .default(1990)
   .step(1)
-  .height(sliderSize*0.8)
+  .height(sliderSize * 0.8)
   .displayValue(false)
   .on('end', val => {
     d3.select('#value').text(val);
     selectedYear = val
-    if(false){
+    if (false) {
       loadWeatherData()
-    }else{
+    } else {
       updateVisDataColours()
       drawHexmap()
     }
   });
 
 d3.select('#sliderYear')
-   .classed("slider-container", true) 
+  .classed("slider-container", true)
   .append('svg')
-   .attr("preserveAspectRatio", "xMinYMin meet")
-   .attr("viewBox", "0 0 " + 60 + " "+ sliderSize.toString())
+  .attr("preserveAspectRatio", "xMinYMin meet")
+  .attr("viewBox", "0 0 " + 60 + " " + sliderSize.toString())
   .attr('class', 'slider')
   .append('g')
   .attr('transform', 'translate(53, 14)')
@@ -237,7 +232,7 @@ window.onload = function () {
   var ca_b = d3.json("canadaBorder.geo.json")
     .then(function (ca) {
       proj = d3.geoAlbers()
-                .fitSize([mapW, mapH], ca)
+        .fitSize([mapW, mapH], ca)
       var path = d3.geoPath().projection(proj);
       var hex = d3.hexgrid()
         .extent([mapW, mapH])
