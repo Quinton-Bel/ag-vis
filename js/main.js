@@ -1,6 +1,7 @@
-var w = 500;
-var h = 300;
-var hr = 3;
+var mapW = 960;
+var mapH = 720;
+var sliderSize = mapH*0.25;
+var hr = 7;
 var selectedMonth = 0
 var selectedYear = 1990
 var weatherType = 'Tmax'
@@ -21,6 +22,10 @@ var cScale =
           '#FF5928'])
   .interpolate(d3.interpolateRgb);
 
+var rainScale = d3.scaleQuantize()
+                  .domain([ 0, 500 ])
+                  .range(colorbrewer.Blues[9])
+
 var t = d3.transition();
 
 var svg = d3.select("#canvas")
@@ -31,14 +36,18 @@ var map = svg.append("g")
 
 function updateVisDataColours() {
   if (visData.length != 0) {
-    var yearlyData = weatherData[selectedYear]
+    var yearlyData = weatherData[selectedYear] 
     visData = visData.map((d) => {
       var hexLonLat = cordRound(proj.invert([d.x, d.y]))
       if ((yearlyData != undefined) &&
         (cordToKey(hexLonLat) in yearlyData)) {
         var hexData = yearlyData[cordToKey(hexLonLat)][selectedMonth]
         if (hexData != null) {
-          d.colour = cScale(hexData)
+          if(weatherType=='Tmax' || weatherType=='Tmin'){
+            d.colour = cScale(hexData)
+          }else{
+            d.colour = rainScale(hexData)
+          }
         } else {
           d.colour = 'white'
         }
@@ -49,17 +58,18 @@ function updateVisDataColours() {
     })
 
   }
-  //  console.log('Updated vis data', visData)
+  //console.log('Updated vis data', visData)
 }
 
 function loadWeatherData(weatherFile) {
   $.ajax({
     url: weatherFile,
-    async: false,
+    async: true,
     dataType: 'json',
     success: function (response) {
       weatherData = response
       updateVisDataColours()
+      drawHexmap()
     }
   });
 }
@@ -100,14 +110,23 @@ function cordRound(cord) {
 
 function drawHexmap() {
   //  console.log('Drawing Hexmap')
+  var svg = d3.select("#canvas-container")
+    // Container class to make it responsive.
+   .classed("svg-container", true) 
+   .select("#canvas")
+   // Responsive SVG needs these 2 attributes and no width and height attr.
+   .attr("preserveAspectRatio", "xMinYMin meet")
+   .attr("viewBox", "0 0 960 720")
+   
+  var map = svg.append("g")
   d3.select("#canvas").on("click", function () {
     var m = d3.mouse(this)
     var p = proj.invert(m);
     console.log("lat/lon:" + p);
     console.log("mouse :" + m);
   });
-  //    svg.selectAll('.hex').remove()
 
+  //  svg.selectAll('.hex').remove()
   map.selectAll('.hex')
     .data(visData)
     .join(
@@ -140,16 +159,33 @@ function drawHexmap() {
         })
       )
     );
+    var weatherLegend = d3.legendColor()
+                  .labelFormat(d3.format(".0f"))
+                  .title(weatherType + " data")
+                  .titleWidth(100);
+
+    if(weatherType=='Tmax' || weatherType=='Tmin'){
+      weatherLegend.scale(cScale)
+      weatherLegend.useClass(false)
+    }else{
+      weatherLegend.scale(rainScale)
+      weatherLegend.useClass(true)
+    }
+    svg.select("#legend").remove()
+    svg.append("g")
+        .attr("id", "legend")
+        .attr("transform", "translate("+ (mapW-150) +", "+ (mapH*0.1) +")")
+        .call(weatherLegend);
 }
 
-var slider = d3
-  .sliderHorizontal()
+var sliderMonth = d3
+  .sliderRight()
   .min(1)
   .max(12)
   .step(1)
-  .width(w * 0.9)
+  .height(sliderSize*0.8)
   .displayValue(false)
-  .on('onchange', val => {
+  .on('end', val => {
     d3.select('#value').text(val);
     selectedMonth = val - 1
     //    console.log(selectedMonth)
@@ -157,23 +193,54 @@ var slider = d3
     drawHexmap()
   });
 
-d3.select('#slider')
+d3.select('#sliderMonth')
+   .classed("slider-container", true) 
   .append('svg')
-  .attr('width', 500)
-  .attr('height', 100)
+   .attr("preserveAspectRatio", "xMinYMin meet")
+   .attr("viewBox", "0 0 " + 50 + " "+ sliderSize.toString())
+  .attr('class', 'slider')
   .append('g')
-  .attr('transform', 'translate(30,30)')
-  .call(slider);
+  .attr('transform', 'translate(7, 14)')
+  .call(sliderMonth);
+
+var sliderYear = d3
+  .sliderLeft()
+  .min(1950)
+  .max(2012)
+  .default(1990)
+  .step(1)
+  .height(sliderSize*0.8)
+  .displayValue(false)
+  .on('end', val => {
+    d3.select('#value').text(val);
+    selectedYear = val
+    if(false){
+      loadWeatherData()
+    }else{
+      updateVisDataColours()
+      drawHexmap()
+    }
+  });
+
+d3.select('#sliderYear')
+   .classed("slider-container", true) 
+  .append('svg')
+   .attr("preserveAspectRatio", "xMinYMin meet")
+   .attr("viewBox", "0 0 " + 60 + " "+ sliderSize.toString())
+  .attr('class', 'slider')
+  .append('g')
+  .attr('transform', 'translate(53, 14)')
+  .call(sliderYear);
 
 window.onload = function () {
   //Loads in the grid data
   var ca_b = d3.json("canadaBorder.geo.json")
     .then(function (ca) {
       proj = d3.geoAlbers()
-        .fitSize([w * 0.95, h * 0.90], ca)
+                .fitSize([mapW, mapH], ca)
       var path = d3.geoPath().projection(proj);
       var hex = d3.hexgrid()
-        .extent([w, h])
+        .extent([mapW, mapH])
         .geography(ca)
         .pathGenerator(path)
         .projection(proj)

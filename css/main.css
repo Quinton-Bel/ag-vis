@@ -3,8 +3,36 @@ body {
   overflow-x: hidden;
 }
 h1{
+  width: 70%;
+  margin: auto;
   font-size: 18pt;
+  font-family: 'Roboto', sans-serif;
 }
 #canvas{
   margin: auto;
+  display: block;
+  margin-top: 0;
+}
+
+#complete-map-vis{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.slider{ 
+  margin: auto;
+  display: block;
+
+}
+.svg-container {
+  display: inline-block;
+  width: 70%;
+  height: auto;
+  overflow: hidden;
+}
+.slider-container {
+  display: inline-block;
+  width: 5%;
+  height: auto;
+  overflow: hidden;
 }

@@ -7,8 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" type='text/css' href="css/main.css">
   <link rel="stylesheet" type="text/css" href="css/c3.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  
   <script src="https://unpkg.com/topojson@3"></script>
   <script src="https://unpkg.com/d3-hexgrid"></script>
+  <script src="https://d3js.org/colorbrewer.v1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/d3-legend/1.1.0/d3-legend.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"></script>
   <script src="js/c3.min.js"></script>
   <script src="https://unpkg.com/d3-simple-slider"></script>
@@ -18,8 +23,13 @@
 
 <body>
   <h1 class=title>AGRI-View</h1>
-  <svg id="canvas"></svg>
-  <div id="slider"></div>
+  <div id="complete-map-vis">
+    <div id="sliderYear"></div>
+    <div id="sliderMonth"></div>
+      <div id="canvas-container">
+        <svg id="canvas"></svg>
+      </div>
+  </div>
   <script type="text/javascript" src="js/main.js"></script>
 </body>
 
