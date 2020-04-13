@@ -53,7 +53,7 @@ function updateVisDataColours() {
           d.colour = 'white'
         }
       } else {
-        d.colour = 'black'
+        d.colour = 'white'
       }
       return d
     })
