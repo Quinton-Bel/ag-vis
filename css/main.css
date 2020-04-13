@@ -13,7 +13,10 @@ h1{
   display: block;
   margin-top: 0;
 }
-
+#legend{ 
+  font-size: 16pt;
+  font-family: 'Roboto', sans-serif;
+}
 #complete-map-vis{
   display: flex;
   justify-content: center;

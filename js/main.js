@@ -3,7 +3,9 @@ var mapH = 720;
 var sliderSize = mapH * 0.25;
 var hr = 7;
 var selectedMonth = 0
-var selectedYear = 1990
+var weatherTypes = ['Tmax', 'Tmin', 'P']
+var defaultYear = 1990
+var selectedYear = defaultYear
 var weatherType = 'Tmax'
 var weatherFile = ''
 var weatherData = {}
@@ -21,9 +23,9 @@ var cScale =
           '#FF5928'])
   .interpolate(d3.interpolateRgb);
 
-var rainScale = d3.scaleQuantize()
-  .domain([0, 500])
-  .range(colorbrewer.Blues[9])
+var rainScale = d3.scaleThreshold()
+  .domain([0, 50, 150, 300, 500])
+  .range(colorbrewer.Blues[5])
 
 var svg = d3.select("#canvas-container")
   // Container class to make it responsive.
@@ -34,6 +36,27 @@ var svg = d3.select("#canvas-container")
   .attr("viewBox", "0 0 960 720")
 
 var map = svg.append("g");
+
+var sliderWeather = d3
+  .sliderBottom()
+  .min(1)
+  .max(3)
+  .step(1)
+  .ticks(2)
+  .tickFormat((d)=>{return weatherTypes[d-1]})
+  .width(75)
+  .displayValue(true)
+  .on('end', val => {
+    d3.select('#value').text(val);
+    weatherType = weatherTypes[val-1]
+    console.log(weatherType)
+    updateVisDataColours()
+    drawHexmap()
+  });
+
+svg.append('g')
+    .attr("transform", "translate(" + (mapW - 150) + ", " + (mapH * 0.3) + ")")
+  .call(sliderWeather);
 
 function updateVisDataColours() {
   if (visData.length != 0) {
@@ -77,7 +100,7 @@ function loadWeatherData(weatherFile) {
 
 function makeWeatherFileName(year, wtype) {
   var prefix = '/wdata/'
-  var rYear = Math.ceil(year / 5) * 5;
+  var rYear = Math.floor(year / 10) * 10;
   return prefix + weatherType + rYear + '.json'
 }
 
@@ -161,10 +184,8 @@ function drawHexmap() {
 
   if (weatherType == 'Tmax' || weatherType == 'Tmin') {
     weatherLegend.scale(cScale)
-    weatherLegend.useClass(false)
   } else {
     weatherLegend.scale(rainScale)
-    weatherLegend.useClass(true)
   }
   svg.select("#legend").remove()
   svg.append("g")
@@ -172,12 +193,13 @@ function drawHexmap() {
     .attr("transform", "translate(" + (mapW - 150) + ", " + (mapH * 0.1) + ")")
     .call(weatherLegend);
 }
-
+var months =['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] 
 var sliderMonth = d3
   .sliderRight()
   .min(1)
   .max(12)
   .step(1)
+  .tickFormat((d)=>{return months[d-1]})
   .height(sliderSize * 0.8)
   .displayValue(false)
   .on('end', val => {
@@ -192,29 +214,37 @@ d3.select('#sliderMonth')
   .classed("slider-container", true)
   .append('svg')
   .attr("preserveAspectRatio", "xMinYMin meet")
-  .attr("viewBox", "0 0 " + 50 + " " + sliderSize.toString())
+  .attr("viewBox", "0 0 " + 60 + " " + sliderSize.toString())
   .attr('class', 'slider')
   .append('g')
   .attr('transform', 'translate(7, 14)')
   .call(sliderMonth);
 
+function isNewDateFile(prevDate, newDate){
+  var prevDecade = Math.floor(prevDate / 10) * 10 
+  var newDecade = Math.floor(newDate / 10) * 10 
+  return (prevDecade == newDecade)
+}
 var sliderYear = d3
   .sliderLeft()
   .min(1950)
   .max(2012)
-  .default(1990)
+  .default(defaultYear)
   .step(1)
   .height(sliderSize * 0.8)
   .displayValue(false)
   .on('end', val => {
     d3.select('#value').text(val);
+    prevDate = selectedYear
     selectedYear = val
-    if (false) {
+    makeWeatherFileName(selectedYear, wtype)
+    if (isNewDateFile(prevDate, selectedYear)) {
       loadWeatherData()
-    } else {
+    }else{
       updateVisDataColours()
       drawHexmap()
     }
+    
   });
 
 d3.select('#sliderYear')
@@ -246,8 +276,6 @@ window.onload = function () {
       //loads the weather data
       weatherFile = makeWeatherFileName(selectedYear, weatherType)
       loadWeatherData(weatherFile)
-      //Updates the vis colours based on new weather data
-      updateVisDataColours()
       //Redraws the hex map
       drawHexmap()
       //Gets the cords for preprocessing
