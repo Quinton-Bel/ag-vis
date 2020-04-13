@@ -63,7 +63,7 @@ h1 {
   width: 70%;
   height: auto;
   margin: auto;
-  display: inline-block;
+  display: block;
   overflow: hidden;
   margin-top: 0;
 }

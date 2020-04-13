@@ -106,11 +106,11 @@ function loadWeatherData(weatherFile) {
 
 function makeWeatherFileName(year, wtype) {
   console.log('Making weather file for: ', year, wtype)
-  var prefix = '/wdata/'
+  var prefix = 'wdata/'
   var rYear = Math.floor(year / 10) * 10;
-  if(sliderLock){ 
+  if (sliderLock) {
     return prefix + weatherType + rYear + '_avg.json'
-  }else{
+  } else {
     return prefix + weatherType + rYear + '.json'
   }
 }
@@ -216,13 +216,13 @@ var sliderMonth = d3
   .height(sliderSize * 0.8)
   .displayValue(true)
   .on('end', val => {
-    if(!sliderLock){
+    if (!sliderLock) {
       d3.select('#value').text(val);
       selectedMonth = val - 1
       //    console.log(selectedMonth)
       updateVisDataColours()
       drawHexmap()
-    }else{
+    } else {
       sliderMonth.value(0)
     }
   });
@@ -268,14 +268,14 @@ var sliderYear = d3
 
 //The checkbox for averages
 d3.select("#avg").on("change",
-()=>{
-  sliderMonth.value(0)
-  selectedMonth = 0
-  sliderLock = !sliderLock;
-  weatherFile = makeWeatherFileName(selectedYear, weatherType)
-  loadWeatherData(weatherFile)
-  console.log(sliderLock)
-});
+  () => {
+    sliderMonth.value(0)
+    selectedMonth = 0
+    sliderLock = !sliderLock;
+    weatherFile = makeWeatherFileName(selectedYear, weatherType)
+    loadWeatherData(weatherFile)
+    console.log(sliderLock)
+  });
 
 d3.select('#sliderYear')
   .classed("slider-container", true)
