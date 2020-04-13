@@ -2,40 +2,70 @@ body {
   margin: 0;
   overflow-x: hidden;
 }
-h1{
+
+h1 {
   width: 70%;
   margin: auto;
   font-size: 18pt;
   font-family: 'Roboto', sans-serif;
 }
-#canvas{
+
+#canvas {
   margin: auto;
   display: block;
   margin-top: 0;
 }
-#legend{ 
+
+#legend {
   font-size: 12pt;
   font-family: 'Roboto', sans-serif;
 }
-#complete-map-vis{
+
+#complete-map-vis {
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.slider{ 
+
+.slider {
   margin: auto;
   display: block;
 
 }
+
 .svg-container {
   display: inline-block;
   width: 70%;
   height: auto;
   overflow: hidden;
 }
+
 .slider-container {
   display: inline-block;
   width: 5%;
   height: auto;
   overflow: hidden;
+}
+
+#chart {
+  margin: auto;
+  display: block;
+  margin-top: 0;
+}
+
+.selection {
+  margin: auto;
+  display: block;
+  margin-top: 0;
+}
+
+#chart-area {
+  width: auto;
+  margin: auto;
+  display: block;
+  margin-top: 0;
+}
+
+#chart .c3-focused .c3-line {
+  stroke-width: 5px;
 }
