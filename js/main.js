@@ -108,7 +108,11 @@ function makeWeatherFileName(year, wtype) {
   console.log('Making weather file for: ', year, wtype)
   var prefix = '/wdata/'
   var rYear = Math.floor(year / 10) * 10;
-  return prefix + weatherType + rYear + '.json'
+  if(sliderLock){ 
+    return prefix + weatherType + rYear + '_avg.json'
+  }else{
+    return prefix + weatherType + rYear + '.json'
+  }
 }
 
 function saveTextAsFile(t) {
@@ -265,7 +269,11 @@ var sliderYear = d3
 //The checkbox for averages
 d3.select("#avg").on("change",
 ()=>{
+  sliderMonth.value(0)
+  selectedMonth = 0
   sliderLock = !sliderLock;
+  weatherFile = makeWeatherFileName(selectedYear, weatherType)
+  loadWeatherData(weatherFile)
   console.log(sliderLock)
 });
 
