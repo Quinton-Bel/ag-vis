@@ -2,6 +2,7 @@ var mapW = 960;
 var mapH = 720;
 var sliderSize = mapH * 0.25;
 var hr = 7;
+var sliderLock = false;
 var selectedMonth = 0
 var weatherTypes = ['Tmax', 'Tmin', 'P']
 var defaultYear = 1990
@@ -211,11 +212,15 @@ var sliderMonth = d3
   .height(sliderSize * 0.8)
   .displayValue(true)
   .on('end', val => {
-    d3.select('#value').text(val);
-    selectedMonth = val - 1
-    //    console.log(selectedMonth)
-    updateVisDataColours()
-    drawHexmap()
+    if(!sliderLock){
+      d3.select('#value').text(val);
+      selectedMonth = val - 1
+      //    console.log(selectedMonth)
+      updateVisDataColours()
+      drawHexmap()
+    }else{
+      sliderMonth.value(0)
+    }
   });
 
 d3.select('#sliderMonth')
@@ -254,6 +259,13 @@ var sliderYear = d3
     }
 
   });
+
+//The checkbox for averages
+d3.select("#avg").on("change",
+()=>{
+  sliderLock = !sliderLock;
+  console.log(sliderLock)
+});
 
 d3.select('#sliderYear')
   .classed("slider-container", true)
