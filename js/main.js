@@ -24,9 +24,9 @@ var cScale =
           '#FF5928'])
   .interpolate(d3.interpolateRgb);
 
-var rainScale = d3.scaleThreshold()
-  .domain([0, 50, 150, 300, 500])
-  .range(colorbrewer.Blues[5])
+var rainScale = d3.scaleLog()
+  .domain([1, 10])
+  .range(["white", "darkblue"])
 
 var svg = d3.select("#canvas-container")
   // Container class to make it responsive.
