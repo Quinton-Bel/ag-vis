@@ -236,7 +236,7 @@ function isNewDateFile(prevDate, newDate) {
 var sliderYear = d3
   .sliderLeft()
   .min(1950)
-  .max(2012)
+  .max(2009)
   .default(defaultYear)
   .step(1)
   .height(sliderSize * 0.8)
@@ -252,7 +252,9 @@ var sliderYear = d3
       updateVisDataColours()
       drawHexmap()
     }
-
+    updateYearSelect();
+    updateProvienceSelect();
+    updateUnitSelect();
   });
 
 d3.select('#sliderYear')
@@ -281,7 +283,7 @@ window.onload = function () {
         .style("stroke-width", '2px')
         .attr("stroke", "white")
         .attr("d", (d) => {
-          console.log(d);
+          //          console.log(d);
           return path(d)
         });
     });
@@ -313,10 +315,19 @@ window.onload = function () {
 
   setTimeout(drawChart, 2000);
 }
+var yearNum;
+var minMaxYear;
+var provienceName;
 
+// go button
+var goBtn;
+
+var init = true;
+var proviences;
+var years
 
 function drawChart() {
-  var svg = d3.select("#chart")
+  var linechart = d3.select("#chart")
     .classed("svg-container", true)
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 960 400");
@@ -324,120 +335,130 @@ function drawChart() {
   d3.csv("SAD.csv").then(function (data) {
     //Read data
     data = data.filter((d) => d.VALUE != "");
-    var proviences = d3.group(data, (d) => d.Provience);
-    var years = d3.group(data, (d) => d.REF_DATE, (d) => d.Provience, d => d.UOM, d => d["Type of crop"]);
-    var attribs = {
-      harvest: "Harvest disposition",
-      provience: "Provience",
-      type: "Type of crop",
-      unitName: "UOM",
-      unit: "SCALAR_FACTOR",
-      value: "VALUE"
-    };
+    proviences = d3.group(data, (d) => d.Provience);
+    years = d3.group(data, (d) => d.REF_DATE, (d) => d.Provience, d => d.UOM, d => d["Type of crop"]);
     //    console.log(years);
-    var yearNum = Array.from(years.keys());
-    var minMaxYear = d3.extent(yearNum);
-    var provienceName = Array.from(proviences.keys());
+    yearNum = Array.from(years.keys());
+    minMaxYear = d3.extent(yearNum);
+    provienceName = Array.from(proviences.keys());
 
     // go button
-    var goBtn = $("#btn-go").on('click', draw);
+    goBtn = $("#btn-go").on('click', draw);
     // read selection 
-    var init = true;
+    init = true;
     updateYearSelect();
     updateProvienceSelect();
     updateUnitSelect();
     draw();
     init = false;
-
-    function updateYearSelect() {
-      var yearSelect = $("#year-select")
-      yearSelect.remove("option");
-      //      console.log(yearSelect);
-      yearSelect.on("change", updateProvienceSelect);
-      for (var i = 0; i < yearNum.length; i++) {
-        var option = document.createElement("option");
-        option.value = yearNum[i]
-        option.innerText = yearNum[i];
-        yearSelect.append(option);
-      }
-      if (!init) draw();
-    }
-
-    function updateProvienceSelect() {
-      var year = selectedYear.toString();
-      //      console.log(years.get(year))
-      if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
-        var proviences = Array.from(years.get(year).keys()).sort();
-        var provSelect = $("#prov-select");
-        provSelect.on("change", updateUnitSelect);
-        provSelect.html("");
-        for (var i = 0; i < proviences.length; i++) {
-          var option = document.createElement("option");
-          option.value = proviences[i]
-          option.innerText = proviences[i];
-          provSelect.append(option);
-        }
-        if (!init) draw();
-      }
-    }
-
-    function updateUnitSelect() {
-      var year = selectedYear.toString();
-      var prov = $("#prov-select").val();
-      var proviences = years.get(year);
-      var uoms = proviences.get(prov);
-      var units = Array.from(uoms.keys());
-      if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
-        var unitSelect = $("#unit-select");
-        unitSelect.on("change", draw);
-        unitSelect.html("");
-        for (var i = 0; i < units.length; i++) {
-          var option = document.createElement("option");
-          option.value = units[i]
-          option.innerText = units[i];
-          unitSelect.append(option);
-        }
-        if (!init) draw();
-      }
-    }
-
-    function draw() {
-      //      var year = $("#year-select").val();
-      var year = selectedYear.toString();
-      var prov = $("#prov-select").val();
-      var unitSelect = $("#unit-select").val();
-      if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
-        var proviencesData = years.get(year);
-        var provience = proviencesData.get(prov);
-        var unit = Array.from(provience.get(unitSelect));
-        //      console.log(unit);
-        var measure = unit[0]
-        newdata = []
-        for (var i = 0; i < unit.length; i++) {
-          var values = unit[i][1].map((d) => d.VALUE);
-          newdata.push([unit[i][0]].concat(values));
-        }
-        // Draw 
-        var chart = c3.generate({
-          bindto: '#chart',
-          data: {
-            columns: newdata
-          },
-          axis: {
-            y: {
-              label: { // ADD
-                text: unitSelect + "/(" +
-                  unit[0][1][0].SCALAR_FACTOR +
-                  ")",
-                position: 'outer-middle'
-              }
-            }
-          },
-          transition: {
-            duration: 1000
-          }
-        });
-      }
-    }
   });
+}
+
+function updateYearSelect() {
+  var yearSelect = $("#year-select")
+  yearSelect.val(selectedYear);
+  yearSelect.remove("option");
+  //      console.log(yearSelect);
+  yearSelect.on("change", function () {
+    var val = yearSelect.val()
+    if (val < 2010) {
+      sliderYear.value(val);
+      d3.select('#value').text(val);
+      prevDate = selectedYear
+      selectedYear = val
+      weatherFile = makeWeatherFileName(selectedYear, weatherType)
+      if (isNewDateFile(prevDate, selectedYear)) {
+        loadWeatherData(weatherFile)
+      } else {
+        updateVisDataColours()
+        drawHexmap()
+      }
+    }
+    updateProvienceSelect();
+  });
+  for (var i = 0; i < yearNum.length; i++) {
+    var option = document.createElement("option");
+    option.value = yearNum[i]
+    option.innerText = yearNum[i];
+    yearSelect.append(option);
+  }
+  if (!init) draw();
+}
+
+function updateProvienceSelect() {
+  var year = selectedYear.toString();
+  //      console.log(years.get(year))
+  if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
+    var proviences = Array.from(years.get(year).keys()).sort();
+    var provSelect = $("#prov-select");
+    provSelect.on("change", updateUnitSelect);
+    provSelect.html("");
+    for (var i = 0; i < proviences.length; i++) {
+      var option = document.createElement("option");
+      option.value = proviences[i]
+      option.innerText = proviences[i];
+      provSelect.append(option);
+    }
+    if (!init) draw();
+  }
+
+}
+
+function updateUnitSelect() {
+  var year = selectedYear.toString();
+  if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
+    var prov = $("#prov-select").val();
+    var proviences = years.get(year);
+    var uoms = proviences.get(prov);
+    var units = Array.from(uoms.keys());
+    var unitSelect = $("#unit-select");
+    unitSelect.on("change", draw);
+    unitSelect.html("");
+    for (var i = 0; i < units.length; i++) {
+      var option = document.createElement("option");
+      option.value = units[i]
+      option.innerText = units[i];
+      unitSelect.append(option);
+    }
+    if (!init) draw();
+  }
+}
+
+function draw() {
+  //      var year = $("#year-select").val();
+  var year = selectedYear.toString();
+  var prov = $("#prov-select").val();
+  var unitSelect = $("#unit-select").val();
+  if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
+    var proviencesData = years.get(year);
+    var provience = proviencesData.get(prov);
+    var unit = Array.from(provience.get(unitSelect));
+    //      console.log(unit);
+    var measure = unit[0]
+    newdata = []
+    for (var i = 0; i < unit.length; i++) {
+      var values = unit[i][1].map((d) => d.VALUE);
+      newdata.push([unit[i][0]].concat(values));
+    }
+    // Draw 
+    var chart = c3.generate({
+      bindto: '#chart',
+      data: {
+        columns: newdata
+      },
+      axis: {
+        y: {
+          label: { // ADD
+            text: unitSelect + "/(" +
+              unit[0][1][0].SCALAR_FACTOR +
+              ")",
+            position: 'outer-middle'
+          }
+        }
+      },
+      transition: {
+        duration: 1000
+      }
+    });
+  }
 }
