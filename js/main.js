@@ -50,10 +50,12 @@ var sliderWeather = d3
   .displayValue(true)
   .on('end', val => {
     d3.select('#value').text(val);
-    weatherType = weatherTypes[val - 1]
-    console.log(weatherType)
-    updateVisDataColours()
-    drawHexmap()
+    console.log(weatherTypes[val - 1])
+    if (weatherType!=weatherTypes[val - 1]){
+      weatherType = weatherTypes[val - 1] 
+      weatherFile = makeWeatherFileName(selectedYear, weatherType)
+      loadWeatherData(weatherFile)
+    }
   });
 
 svg.append('g')
@@ -88,6 +90,7 @@ function updateVisDataColours() {
 }
 
 function loadWeatherData(weatherFile) {
+  console.log('Loading new weather file: ', weatherFile)
   $.ajax({
     url: weatherFile,
     async: true,
@@ -101,6 +104,7 @@ function loadWeatherData(weatherFile) {
 }
 
 function makeWeatherFileName(year, wtype) {
+  console.log('Making weather file for: ', year, wtype)
   var prefix = '/wdata/'
   var rYear = Math.floor(year / 10) * 10;
   return prefix + weatherType + rYear + '.json'
@@ -205,7 +209,7 @@ var sliderMonth = d3
     return months[d - 1]
   })
   .height(sliderSize * 0.8)
-  .displayValue(false)
+  .displayValue(true)
   .on('end', val => {
     d3.select('#value').text(val);
     selectedMonth = val - 1
@@ -227,7 +231,7 @@ d3.select('#sliderMonth')
 function isNewDateFile(prevDate, newDate) {
   var prevDecade = Math.floor(prevDate / 10) * 10
   var newDecade = Math.floor(newDate / 10) * 10
-  return (prevDecade == newDecade)
+  return (prevDecade != newDecade)
 }
 var sliderYear = d3
   .sliderLeft()
@@ -236,14 +240,14 @@ var sliderYear = d3
   .default(defaultYear)
   .step(1)
   .height(sliderSize * 0.8)
-  .displayValue(false)
+  .displayValue(true)
   .on('end', val => {
     d3.select('#value').text(val);
     prevDate = selectedYear
     selectedYear = val
-    makeWeatherFileName(selectedYear, wtype)
+    weatherFile = makeWeatherFileName(selectedYear, weatherType)
     if (isNewDateFile(prevDate, selectedYear)) {
-      loadWeatherData()
+      loadWeatherData(weatherFile)
     } else {
       updateVisDataColours()
       drawHexmap()
