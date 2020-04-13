@@ -241,7 +241,7 @@ var sliderYear = d3
     d3.select('#value').text(val);
     prevDate = selectedYear
     selectedYear = val
-    makeWeatherFileName(selectedYear, wtype)
+    makeWeatherFileName(selectedYear, weatherType)
     if (isNewDateFile(prevDate, selectedYear)) {
       loadWeatherData()
     } else {
@@ -263,6 +263,25 @@ d3.select('#sliderYear')
 
 window.onload = function () {
   //Loads in the grid data
+  var ca_p = d3.json("canada.geojson")
+    .then(function (ca) {
+      proj = d3.geoAlbers()
+        .fitSize([mapW, mapH], ca)
+      var path = d3.geoPath().projection(proj);
+      var mg = svg.append('g').attr('class', 'prov-map')
+      mg
+        .datum(ca)
+        .append("path")
+        .attr("fill", "transparent")
+        .style("opacity", 0.5)
+        .style("stroke-width", '0.5px')
+        .attr("stroke", "black")
+        .attr("d", (d) => {
+          console.log(d);
+          return path(d)
+        });
+    });
+
   var ca_b = d3.json("canadaBorder.geo.json")
     .then(function (ca) {
       proj = d3.geoAlbers()
@@ -287,4 +306,134 @@ window.onload = function () {
       //saveTextAsFile(JSON.stringify({"cords": cords}))
       //console.log(JSON.stringify({"cords": cords}))
     }); // end then()
+
+  setTimeout(drawChart, 2000);
+}
+
+
+function drawChart() {
+  var svg = d3.select("#chart")
+    .classed("svg-container", true)
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 960 800");
+
+  d3.csv("SAD.csv").then(function (data) {
+    //Read data
+    data = data.filter((d) => d.VALUE != "");
+    var proviences = d3.group(data, (d) => d.Provience);
+    var years = d3.group(data, (d) => d.REF_DATE, (d) => d.Provience, d => d.UOM, d => d["Type of crop"]);
+    var attribs = {
+      harvest: "Harvest disposition",
+      provience: "Provience",
+      type: "Type of crop",
+      unitName: "UOM",
+      unit: "SCALAR_FACTOR",
+      value: "VALUE"
+    };
+    //    console.log(years);
+    var yearNum = Array.from(years.keys());
+    var minMaxYear = d3.extent(yearNum);
+    var provienceName = Array.from(proviences.keys());
+
+    // go button
+    var goBtn = $("#btn-go").on('click', draw);
+    // read selection 
+    var init = true;
+    updateYearSelect();
+    updateProvienceSelect();
+    updateUnitSelect();
+    draw();
+    init = false;
+
+    function updateYearSelect() {
+      var yearSelect = $("#year-select")
+      yearSelect.remove("option");
+      //      console.log(yearSelect);
+      yearSelect.on("change", updateProvienceSelect);
+      for (var i = 0; i < yearNum.length; i++) {
+        var option = document.createElement("option");
+        option.value = yearNum[i]
+        option.innerText = yearNum[i];
+        yearSelect.append(option);
+      }
+      if (!init) draw();
+    }
+
+    function updateProvienceSelect() {
+      var year = selectedYear.toString();
+      //      console.log(years.get(year))
+      if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
+        var proviences = Array.from(years.get(year).keys()).sort();
+        var provSelect = $("#prov-select");
+        provSelect.on("change", updateUnitSelect);
+        provSelect.html("");
+        for (var i = 0; i < proviences.length; i++) {
+          var option = document.createElement("option");
+          option.value = proviences[i]
+          option.innerText = proviences[i];
+          provSelect.append(option);
+        }
+        if (!init) draw();
+      }
+    }
+
+    function updateUnitSelect() {
+      var year = selectedYear.toString();
+      var prov = $("#prov-select").val();
+      var proviences = years.get(year);
+      var uoms = proviences.get(prov);
+      var units = Array.from(uoms.keys());
+      if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
+        var unitSelect = $("#unit-select");
+        unitSelect.on("change", draw);
+        unitSelect.html("");
+        for (var i = 0; i < units.length; i++) {
+          var option = document.createElement("option");
+          option.value = units[i]
+          option.innerText = units[i];
+          unitSelect.append(option);
+        }
+        if (!init) draw();
+      }
+    }
+
+    function draw() {
+      //      var year = $("#year-select").val();
+      var year = selectedYear.toString();
+      var prov = $("#prov-select").val();
+      var unitSelect = $("#unit-select").val();
+      if (year <= minMaxYear[1] && year >= minMaxYear[0]) {
+        var proviencesData = years.get(year);
+        var provience = proviencesData.get(prov);
+        var unit = Array.from(provience.get(unitSelect));
+        //      console.log(unit);
+        var measure = unit[0]
+        newdata = []
+        for (var i = 0; i < unit.length; i++) {
+          var values = unit[i][1].map((d) => d.VALUE);
+          newdata.push([unit[i][0]].concat(values));
+        }
+        // Draw 
+        var chart = c3.generate({
+          bindto: '#chart',
+          data: {
+            columns: newdata
+          },
+          axis: {
+            y: {
+              label: { // ADD
+                text: unitSelect + "/(" +
+                  unit[0][1][0].SCALAR_FACTOR +
+                  ")",
+                position: 'outer-middle'
+              }
+            }
+          },
+          transition: {
+            duration: 1000
+          }
+        });
+      }
+    }
+  });
 }
