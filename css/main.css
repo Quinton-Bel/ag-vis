@@ -66,6 +66,8 @@ h1 {
 }
 #chart-area {
   margin: auto;
+  display: block;
+  overflow: hidden;
   margin-top: 0;
 }
 
