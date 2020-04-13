@@ -10,13 +10,29 @@ var weatherData = {}
 var visData = []
 var proj = undefined
 var hexPath = []
-var cScale = d3.scaleLinear()
-                .domain([-20, 0, 20])
-                .range(['blue', 'white', 'red']);
+var cScale =
+  //    d3.scaleThreshold([-20, -15, -10, -5, 0, 5, 10, 15, 20], d3.schemeRdBu[10].reverse());
+
+  d3.scaleLinear()
+  .domain([-20, -10, 0, 10, 20])
+  .range(['#2E62FF',
+          '#2B9AB1',
+          '#E7CB7C',
+          '#E9A640',
+          '#FF5928'])
+  .interpolate(d3.interpolateRgb);
+
 var rainScale = d3.scaleQuantize()
                   .domain([ 0, 500 ])
                   .range(colorbrewer.Blues[9])
+
 var t = d3.transition();
+
+var svg = d3.select("#canvas")
+  .attr("height", h)
+  .attr("width", w)
+  .attr("viewBox", [0, 0, w, h]);
+var map = svg.append("g")
 
 function updateVisDataColours() {
   if (visData.length != 0) {
@@ -33,13 +49,14 @@ function updateVisDataColours() {
             d.colour = rainScale(hexData)
           }
         } else {
-          d.colour = 'lightgray'
+          d.colour = 'white'
         }
       } else {
         d.colour = 'black'
       }
       return d
     })
+
   }
   //console.log('Updated vis data', visData)
 }
@@ -108,6 +125,7 @@ function drawHexmap() {
     console.log("lat/lon:" + p);
     console.log("mouse :" + m);
   });
+
   //  svg.selectAll('.hex').remove()
   map.selectAll('.hex')
     .data(visData)
@@ -118,30 +136,27 @@ function drawHexmap() {
       .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
       .attr('d', hexPath)
       .style('stroke', '#666')
-      .style('fill', 'lightgray')
+      .style('fill', 'white')
       .style('stroke-width', 1)
-      .call(enter => enter.transition(t)
-        .duration(1500)
+      .call(enter => enter
+        .transition(t)
+        .duration(750)
         .style('fill', (d) => {
           return d.colour
-        })),
+        })
+      ),
       update => update
       .attr('class', 'hex')
       .attr('transform', d => 'translate(' + d.x + ',' + d.y + ')')
       .attr('d', hexPath)
       .style('stroke', '#666')
       .style('stroke-width', 1)
-      .call(enter => enter.transition(t)
-        .duration(1500)
+      .call(enter => enter
+        .transition(t)
+        .duration(750)
         .style('fill', (d) => {
           return d.colour
         })
-      ),
-      exit => exit
-      .call(ex => ex.transition(t)
-        .duration(1000)
-        .style('fill', 'lightgray')
-        .remove()
       )
     );
     var weatherLegend = d3.legendColor()
