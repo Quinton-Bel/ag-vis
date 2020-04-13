@@ -60,9 +60,11 @@ h1 {
 }
 
 #chart-area {
-  width: auto;
+  width: 70%;
+  height: auto;
   margin: auto;
-  display: block;
+  display: inline-block;
+  overflow: hidden;
   margin-top: 0;
 }
 
