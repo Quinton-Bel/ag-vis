@@ -13,16 +13,26 @@ h1{
   display: block;
   margin-top: 0;
 }
-#cc{
-  text-align: center;
+
+#complete-map-vis{
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .slider{ 
   margin: auto;
   display: block;
+
 }
 .svg-container {
   display: inline-block;
   width: 70%;
+  height: auto;
+  overflow: hidden;
+}
+.slider-container {
+  display: inline-block;
+  width: 5%;
   height: auto;
   overflow: hidden;
 }

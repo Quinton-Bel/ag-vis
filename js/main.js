@@ -1,6 +1,6 @@
 var mapW = 960;
 var mapH = 720;
-var sliderWidth = innerWidth/2;
+var sliderSize = mapH*0.25;
 var hr = 7;
 var selectedMonth = 0
 var selectedYear = 1990
@@ -11,11 +11,11 @@ var visData = []
 var proj = undefined
 var hexPath = []
 var cScale = d3.scaleLinear()
-  .domain([-20, 0, 20])
-  .range(['blue', 'white', 'red']);
-var rainScale = d3.scaleLinear()
-                  .domain([0, 500])
-                  .range(['white', 'green'])
+                .domain([-20, 0, 20])
+                .range(['blue', 'white', 'red']);
+var rainScale = d3.scaleQuantize()
+                  .domain([ 0, 500 ])
+                  .range(colorbrewer.Blues[9])
 var t = d3.transition();
 
 function updateVisDataColours() {
@@ -144,16 +144,33 @@ function drawHexmap() {
         .remove()
       )
     );
+    var weatherLegend = d3.legendColor()
+                  .labelFormat(d3.format(".0f"))
+                  .title(weatherType + " data")
+                  .titleWidth(100);
+
+    if(weatherType=='Tmax' || weatherType=='Tmin'){
+      weatherLegend.scale(cScale)
+      weatherLegend.useClass(false)
+    }else{
+      weatherLegend.scale(rainScale)
+      weatherLegend.useClass(true)
+    }
+    svg.select("#legend").remove()
+    svg.append("g")
+        .attr("id", "legend")
+        .attr("transform", "translate("+ (mapW-150) +", "+ (mapH*0.1) +")")
+        .call(weatherLegend);
 }
 
 var sliderMonth = d3
-  .sliderHorizontal()
+  .sliderRight()
   .min(1)
   .max(12)
   .step(1)
-  .width(sliderWidth*0.8)
+  .height(sliderSize*0.8)
   .displayValue(false)
-  .on('onchange', val => {
+  .on('end', val => {
     d3.select('#value').text(val);
     selectedMonth = val - 1
     //    console.log(selectedMonth)
@@ -162,23 +179,24 @@ var sliderMonth = d3
   });
 
 d3.select('#sliderMonth')
+   .classed("slider-container", true) 
   .append('svg')
-  .attr('width', sliderWidth)
-  .attr('height', 50)
+   .attr("preserveAspectRatio", "xMinYMin meet")
+   .attr("viewBox", "0 0 " + 50 + " "+ sliderSize.toString())
   .attr('class', 'slider')
   .append('g')
-  .attr('transform', 'translate(30,30)')
+  .attr('transform', 'translate(7, 14)')
   .call(sliderMonth);
 
 var sliderYear = d3
-  .sliderHorizontal()
+  .sliderLeft()
   .min(1950)
   .max(2012)
   .default(1990)
   .step(1)
-  .width(sliderWidth*0.8)
+  .height(sliderSize*0.8)
   .displayValue(false)
-  .on('onchange', val => {
+  .on('end', val => {
     d3.select('#value').text(val);
     selectedYear = val
     if(false){
@@ -190,12 +208,13 @@ var sliderYear = d3
   });
 
 d3.select('#sliderYear')
+   .classed("slider-container", true) 
   .append('svg')
-  .attr('width', sliderWidth)
-  .attr('height', 50)
+   .attr("preserveAspectRatio", "xMinYMin meet")
+   .attr("viewBox", "0 0 " + 60 + " "+ sliderSize.toString())
   .attr('class', 'slider')
   .append('g')
-  .attr('transform', 'translate(30,30)')
+  .attr('transform', 'translate(53, 14)')
   .call(sliderYear);
 
 window.onload = function () {
