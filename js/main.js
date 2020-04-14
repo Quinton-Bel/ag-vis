@@ -114,7 +114,8 @@ function makeWeatherFileName(year, wtype) {
     return prefix + weatherType + rYear + '.json'
   }
 }
-
+//This function was obtained from https://stackoverflow.com/questions/40477286/keep-javascript-blob-from-editing-data-when-saving-file
+//It was used only to download the cords we generated for the hexbins
 function saveTextAsFile(t) {
   var textFileAsBlob = new Blob([t], {
     type: "application/json"
