@@ -29,10 +29,8 @@ var rainScale = d3.scaleLog()
   .range(["white", "darkblue"])
 
 var svg = d3.select("#canvas-container")
-  // Container class to make it responsive.
   .classed("svg-container", true)
   .select("#canvas")
-  // Responsive SVG needs these 2 attributes and no width and height attr.
   .attr("preserveAspectRatio", "xMinYMin meet")
   .attr("viewBox", "0 0 960 720")
 
