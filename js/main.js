@@ -92,7 +92,7 @@ function loadWeatherData(weatherFile) {
   console.log('Loading new weather file: ', weatherFile)
   $.ajax({
     url: weatherFile,
-    async: true,
+    async: false,
     dataType: 'json',
     success: function (response) {
       weatherData = response;
